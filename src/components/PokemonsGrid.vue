@@ -1,10 +1,11 @@
 <template>
   <div class="main-container">
     <div class="card" v-for="(poke, index) in pokemons" :key="index">
-      <img :src="this.pokemonsImage[index].url" alt="">
+      <p class="id">#{{index+1}}</p>
+      <img :src="this.pokemonsImage[index].url" alt="pokemon image">
       <p class="name">{{pokemonsName[index].name}}</p>
       <div class="types">
-        <p>tipo pokemon</p>
+        <p>{{ this.pokemonTypes[index].type }}</p>
       </div>
     </div>
   </div>
@@ -18,7 +19,8 @@
         pokemons: null,
         pokemonsName: null,
         pokemonsImage: [],
-        limit: 151
+        pokemonTypes: [],
+        limit: 1010 // LIMIT 1010
       }
     },
     methods: {
@@ -35,7 +37,6 @@
         const pokes = (Array.from(pokemons));
 
         this.pokemonsName = pokes
-        //console.log(this.pokemonsImage+'1'+'.png')
 
         const URLNames = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
 
@@ -45,12 +46,32 @@
 
         // get types
 
-        const URLTypes = await fetch("https://pokeapi.co/api/v2/pokemon/1")
+        const reqURLTypes = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${this.limit}`)
 
-        const types = await URLTypes.json()
+        const data = await reqURLTypes.json()
 
-        console.log(types.types[1].type.name);
+        let currentPokemon = data.results
 
+        let typesToAdd = []
+
+        for(let i = 0; i < this.limit; i++){
+          const req = await fetch(currentPokemon[i].url)
+
+          const data = await req.json()
+
+          let currentType = data.types
+
+          let typesList = ""
+
+          for(let j = 0; j < currentType.length; j++){
+            typesList += `${currentType[j].type.name} `
+          }
+
+          typesToAdd.push({id: i, type: typesList})
+          
+        }
+        
+        this.pokemonTypes = typesToAdd
 
       }
     },
@@ -75,16 +96,27 @@
   .card {
     min-width: 150px;
     width: 10%;
-    min-height: 100px;
-    height: 200px;
+    min-height: 150px;
     border-radius: 5%;
     text-align: center;
     display: flex;
     flex-direction: column;
     box-shadow: 0 0 5px 1px;
-
+    padding: 10px 0 10px 0;
+    
   }
 
+  .id {
+    font-weight: bold;
+    font-size: 22px;
+    display: flex;
+    margin-left: 15px;
+    
+  }
   
-  
+  .name {
+    font-weight: bold;
+    letter-spacing: .8px;
+  }
+
 </style>
